@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import UiView from './views/UiView.vue'
 import MapView from './views/MapView.vue'
+import SideBar from '@/views/SideBar.vue'
+
+
 </script>
 
 <template>
   <main class="container">
-    <ui-view />
+    <SideBar />
     <map-view />
   </main>
 </template>

@@ -1,59 +1,38 @@
-<script setup lang="ts">
-import { useTemplateRef } from 'vue'
-import { useCommonStore } from '@/stores/common'
+<script lang='ts' setup>
+  import MapInstance from '@/logics/mapInstance';
+  import { useTemplateRef } from 'vue'
+  import useStore from '@/stores';
 
-import MapInstance from '@/logics/MapInstance'
 
-defineOptions({ name: 'MapView' })
+  const store = useStore();
 
-const commonStore = useCommonStore()
+  const mapEl = useTemplateRef<HTMLElement>('map');
+  const map = new MapInstance();
 
-const mapRef = useTemplateRef<HTMLElement>('map')
-const mapInstance: MapInstance = new MapInstance()
 
-function initMap() {
-  if (mapRef.value == null) return
-  mapInstance.init(mapRef.value)
+  onMounted(() => {
+    map.creatMap(mapEl.value as HTMLElement);
+    map.createTileLayer()
+    map.createZoomControl()
+  });
 
-  mapInstance.renderTile()
-  mapInstance.renderZoomControl()
-}
-
-onMounted(() => {
-  initMap()
-})
-
-watch(
-  () => commonStore.markers,
-  (val) => {
-    if (mapInstance.map == null) {
-      setTimeout(() => mapInstance.renderMarkers(val), 100)
-      return
-    }
-    mapInstance.renderMarkers(val)
-  },
-  {
+  watch(()=> store.marker,(newVal) =>{
+    console.log('vaue changed', newVal);
+    
+    map.createMarker(newVal as any[])
+  },{
     immediate: true
-  }
-)
-
-watch(
-  () => commonStore.mapId,
-  (val) => mapInstance.renderTile(val + '')
-)
+  })
 </script>
-
 <template>
-  <div class="map-wrapper" ref="map"></div>
+  <div id="map" ref="map"></div>
 </template>
 
-<style lang="scss" scoped>
-.map-wrapper {
-  position: absolute;
-  top: 0;
-  left: 344px;
-  width: calc(100% - 344px);
+<style scoped lang="scss">
+ #map {
   height: 100%;
-  z-index: 1;
-}
+  width: 100%;
+  backface-visibility: hidden;
+  // position: relative;
+ }
 </style>
