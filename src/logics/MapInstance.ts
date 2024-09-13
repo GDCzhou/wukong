@@ -1,17 +1,19 @@
 
 import 'leaflet/dist/leaflet.css'
-import L, { icon } from "leaflet";
+import L from "leaflet";
 import { getMarkerTmpl, getPopupTmpl } from '@/api';
 import ejs from 'ejs';
 
 
 const MAP_TEMPLATE = `maps/{id}/{z}/{x}/{y}.webp` as const
+const MAP_TEMPLATE_2 = `maps/{id}/{z}/{x}_{y}.webp` as const
+
 const MAP_DEFAULT_ID = 48 as const
 const ZOOM_LIMIT = {
   maxZoom: 12,
   minZoom: 9,
 } as const
-class MapInstance {
+class MapObj {
   map: L.Map | void = void 0;
   tileLayer: L.TileLayer | void = void 0;
   layerGroup: L.LayerGroup | void = void 0;
@@ -40,10 +42,12 @@ class MapInstance {
     
     })
   }
-  createTileLayer(id: number = MAP_DEFAULT_ID) {
+  createTileLayer(id: number = MAP_DEFAULT_ID,template: boolean = false) {
     if (!this.map) return;
+    const templateStr = !template ? MAP_TEMPLATE : MAP_TEMPLATE_2    
     this.tileLayer?.remove()
-    this.tileLayer = L.tileLayer(MAP_TEMPLATE,{
+    this.layerGroup?.clearLayers()
+    this.tileLayer = L.tileLayer(templateStr,{
       id: String(id),
       ...ZOOM_LIMIT
     })
@@ -62,7 +66,9 @@ class MapInstance {
    .addTo(this.map)
   }
   createMarker(markers: any[]) {
+    console.log('createMarker: ', markers)
     if (!this.map) return;
+    
     this.layerGroup?.clearLayers()
     const markerPonits = markers.map((marker) => {
       const {x,y,name,description,iconUrl} = marker
@@ -90,5 +96,6 @@ class MapInstance {
   }
 }
 
+const MapInstance = new MapObj()
 
 export default MapInstance;

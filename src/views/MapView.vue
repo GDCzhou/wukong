@@ -1,38 +1,54 @@
 <script lang='ts' setup>
-  import MapInstance from '@/logics/mapInstance';
-  import { useTemplateRef } from 'vue'
-  import useStore from '@/stores';
+import MapInstance from '@/logics/mapInstance';
+import { useTemplateRef } from 'vue'
+import useStore from '@/stores';
 
 
-  const store = useStore();
+const store = useStore();
 
-  const mapEl = useTemplateRef<HTMLElement>('map');
-  const map = new MapInstance();
+const mapEl = useTemplateRef<HTMLElement>('map');
 
 
-  onMounted(() => {
-    map.creatMap(mapEl.value as HTMLElement);
-    map.createTileLayer()
-    map.createZoomControl()
-  });
 
-  watch(()=> store.marker,(newVal) =>{
-    console.log('vaue changed', newVal);
-    
-    map.createMarker(newVal as any[])
-  },{
-    immediate: true
-  })
+onMounted(() => {
+  MapInstance.creatMap(mapEl.value as HTMLElement);
+  MapInstance.createTileLayer()
+  MapInstance.createZoomControl()
+});
+
+watch(() => store.marker, (newVal) => {
+  console.log({ newVal });
+
+  MapInstance.createMarker(newVal as any[])
+
+})
+
+watch(() => store.mapInfo, (newVal) => {
+  if (newVal.id === 61) {
+    MapInstance.createTileLayer(newVal.id, true)
+  } else {
+    MapInstance.createTileLayer(newVal.id)
+  }
+  if (store.selectMarkerId.get(newVal.id)?.size) {
+    store.getMarkListAction()
+    MapInstance.createMarker(store.marker)
+
+  }
+})
+
+
+
 </script>
 <template>
   <div id="map" ref="map"></div>
 </template>
 
 <style scoped lang="scss">
- #map {
+#map {
   height: 100%;
   width: 100%;
   backface-visibility: hidden;
   // position: relative;
- }
+  z-index: 99;
+}
 </style>
